@@ -9,7 +9,8 @@
             <h3><i class="ui users icon"></i>List Room</h3>
           </div>
           <div class="ui four cards">
-            <div class="card" v-for="room in listRooms">
+            <div class="card" v-for="(room, index) in listRooms">
+              
               <div class="content">
                 <div class="header">{{ room.name }}</div>
                 <div class="meta">RM: {{ room.host }}</div>
@@ -69,7 +70,7 @@ export default {
     return {
       messageChat: '',
       listChat: '',
-      listRooms: '',
+      listRooms: [],
       removeList: '',
 
       titleRoom: '',
@@ -78,10 +79,10 @@ export default {
     }
   },
   watch: {
-    listChat() {
-      let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
-      audioChat.play()
-    },
+    // listChat() {
+    //   let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
+    //   audioChat.play()
+    // },
     removeList() {
       for (let i = 0; i < this.removeList.length; i++) {
         db.ref(`/db/globalChat/` + this.removeList[i]).remove()
@@ -197,12 +198,18 @@ export default {
       }
     },
     submitChat() {
+      console.log('masuk')
       let id = localStorage.getItem('token')
-      db.ref(`/db/globalChat/`).push({
-        name: localStorage.getItem('name'),
-        message: this.messageChat
-      })
+      try {
+        db.ref(`/db/globalChat/`).push({
+          name: localStorage.getItem('name'),
+          message: this.messageChat
+        })
+      } catch (error) {
+        console.log(error)
+      }
       this.messageChat = ''
+      console.log('haha')
     }
   }
 }

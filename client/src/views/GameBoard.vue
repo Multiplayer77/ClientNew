@@ -11,7 +11,7 @@
     <div class="sidenav">
 
 
-      <button @click="rollDice">rolllll</button>
+      <button @click="rollDice" v-if="isMyturn">rolllll</button>
 
     </div>
 
@@ -21,138 +21,315 @@
 <script>
 import tile from '../components/Tile'
 import axios from 'axios'
+import firebaseApp from '../assets/config'
+
+const db = firebaseApp.database()
 
 export default {
-  name: "game-board",
+  name: 'game-board',
   props: [],
   created() {
-    this.gotAdvance()
+    this.initGame()
   },
   data() {
     return {
-      diceResult : '',
-      turnIndex : 0,
-      show : true,
-      players : [
-        {name:'adit',position:1},
-        {name:'dwi',position:2},
-        {name:'gusti',position:3},
-        {name:'frans',position:4}
-      ],
-      tiles : [
-        100,99,98,97,96,95,94,93,92,91,
-        81,82,83,84,85,86,87,88,89,90,
-        80,79,78,77,76,75,74,73,72,71,
-        61,62,63,64,65,66,67,68,69,70,
-        60,59,58,57,56,55,54,53,52,51,
-        41,42,43,44,45,46,47,48,49,50,
-        40,39,38,37,36,35,34,33,32,31,
-        21,22,23,24,25,26,27,28,29,30,
-        20,19,18,17,16,15,14,13,12,11,
-        1,2,3,4,5,6,7,8,9,10,
+      diceResult: '',
+      myPlayerNumber: '',
+      totalPlayer: [],
+      turnIndex: null,
+      show: true,
+      players: [],
+      tiles: [
+        100,
+        99,
+        98,
+        97,
+        96,
+        95,
+        94,
+        93,
+        92,
+        91,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        80,
+        79,
+        78,
+        77,
+        76,
+        75,
+        74,
+        73,
+        72,
+        71,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        60,
+        59,
+        58,
+        57,
+        56,
+        55,
+        54,
+        53,
+        52,
+        51,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        40,
+        39,
+        38,
+        37,
+        36,
+        35,
+        34,
+        33,
+        32,
+        31,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
       ]
-    };
+    }
   },
-  watch: {
-    turnIndex : function(){
-      if(this.turnIndex === 4){
-        this.turnIndex = 0
+  computed: {
+    isMyturn() {
+      if (this.myPlayerNumber === 'p1') {
+        if (this.turnIndex === 0) {
+          return true
+        } else {
+          return false
+        }
+      } else if (this.myPlayerNumber === 'p2') {
+        if (this.turnIndex === 1) {
+          return true
+        } else {
+          return false
+        }
+      } else if (this.myPlayerNumber === 'p3') {
+        if (this.turnIndex === 2) {
+          return true
+        } else {
+          return false
+        }
+      } else if (this.myPlayerNumber === 'p4') {
+        if (this.turnIndex === 3) {
+          return true
+        } else {
+          return false
+        }
       }
     }
   },
-  components : {
+  watch: {
+    players() {
+      this.gotAdvance()
+      this.updateComponent()
+    },
+    turnIndex: function() {
+      let roomId = localStorage.getItem('roomId')
+      if (this.turnIndex === this.totalPlayer.length) {
+        db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(0)
+      }
+    }
+  },
+  components: {
     tile
   },
   methods: {
-    winner(){
+    initGame() {
+      let token = localStorage.getItem('token')
+      let roomId = localStorage.getItem('roomId')
+      db.ref(`/db/rooms/` + roomId + `/player`).once('value', snapshot => {
+        if (token === snapshot.val().p1.id) {
+          this.myPlayerNumber = 'p1'
+        } else if (token === snapshot.val().p2.id) {
+          this.myPlayerNumber = 'p2'
+        } else if (token === snapshot.val().p3.id) {
+          this.myPlayerNumber = 'p3'
+        } else if (token === snapshot.val().p4.id) {
+          this.myPlayerNumber = 'p4'
+        }
+        db.ref(`/db/rooms/` + roomId + `/player`).on('value', snapshot => {
+          this.players = Object.values(snapshot.val())
+          for (let i = 0; i < this.players.length; i++) {}
+        })
+        this.initGameEngine()
+      })
+    },
+    initGameEngine() {
+      console.log('masuk init game')
+      let roomId = localStorage.getItem('roomId')
+      db.ref(`/db/rooms/` + roomId + `/player`).once('value', snapshot => {
+        this.totalPlayer = Object.keys(snapshot.val())
+        db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(0)
+        for (let i = 0; i < this.totalPlayer.length; i++) {
+          db.ref(`/db/rooms/` + roomId + `/player/` + this.totalPlayer[i] + '/position').set(0)
+        }
+      })
+
+      db.ref(`/db/rooms/` + roomId + `/currentTurn`).on('value', snapshot => {
+        this.turnIndex = snapshot.val()
+      })
+    },
+    winner() {
       console.log('yeeee menang')
     },
-    updateComponent(){    
-     this.show = false;
+    updateComponent() {
+      this.show = false
 
-    this.$nextTick(function(){
-      this.show = true
-    })
-    console.log('test')
-
-   },
-    rollDice(){
-        axios({
-          method : 'GET',
-          url : 'http://roll.diceapi.com/json/d6'
-        })
-        .then((result) => {
+      this.$nextTick(function() {
+        this.show = true
+      })
+      console.log('test')
+    },
+    rollDice() {
+      let roomId = localStorage.getItem('roomId')
+      axios({
+        method: 'GET',
+        url: 'http://roll.diceapi.com/json/d6'
+      })
+        .then(result => {
           let dice = result.data.dice[0].value
-          this.players[this.turnIndex].position += dice
-          this.turnIndex += 1
+          db.ref(
+            `/db/rooms/` + roomId + `/player/` + this.totalPlayer[this.turnIndex] + '/position'
+          ).set(this.players[this.turnIndex].position + dice)
+          let newTurnIndex = this.turnIndex + 1
+          db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(newTurnIndex)
           this.gotAdvance()
           this.updateComponent()
           console.log(dice)
-
-        }).catch((err) => {
-          console.log(err);
-        });
-
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
 
-    gotAdvance(){
-
-
-      this.players.forEach((player,index)=>{
-        if(player.position > 100){
-          this.players[index].position = 100 - (this.players[index].position-100)
+    gotAdvance() {
+      this.players.forEach((player, index) => {
+        if (player.position > 100) {
+          this.players[index].position = 100 - (this.players[index].position - 100)
         }
         switch (player.position) {
-          case 2: this.players[index].position = 38
-          break;
-          case 7: this.players[index].position = 14
-          break;
-          case 8: this.players[index].position = 31
-          break;
-          case 16: this.players[index].position = 6
-          break;
-          case 21: this.players[index].position = 42
-          break;
-          case 28: this.players[index].position = 84
-          break;
-          case 36: this.players[index].position = 44
-          break;
-          case 46: this.players[index].position = 25
-          break;
-          case 49: this.players[index].position = 11
-          break;
-          case 51: this.players[index].position = 67
-          break;
-          case 62: this.players[index].position = 19
-          break;
-          case 64: this.players[index].position = 60
-          break;
-          case 71: this.players[index].position = 91
-          break;
-          case 74: this.players[index].position = 53
-          break;
-          case 78: this.players[index].position = 98
-          break;
-          case 89: this.players[index].position = 68
-          break;
-          case 92: this.players[index].position = 88
-          break;
-          case 87: this.players[index].position = 94
-          break;
-          case 95: this.players[index].position = 75
-          break;
-          case 99: this.players[index].position = 80
-          break;
-          case 100: this.winner()
-          break;
+          case 2:
+            this.players[index].position = 38
+            break
+          case 7:
+            this.players[index].position = 14
+            break
+          case 8:
+            this.players[index].position = 31
+            break
+          case 16:
+            this.players[index].position = 6
+            break
+          case 21:
+            this.players[index].position = 42
+            break
+          case 28:
+            this.players[index].position = 84
+            break
+          case 36:
+            this.players[index].position = 44
+            break
+          case 46:
+            this.players[index].position = 25
+            break
+          case 49:
+            this.players[index].position = 11
+            break
+          case 51:
+            this.players[index].position = 67
+            break
+          case 62:
+            this.players[index].position = 19
+            break
+          case 64:
+            this.players[index].position = 60
+            break
+          case 71:
+            this.players[index].position = 91
+            break
+          case 74:
+            this.players[index].position = 53
+            break
+          case 78:
+            this.players[index].position = 98
+            break
+          case 89:
+            this.players[index].position = 68
+            break
+          case 92:
+            this.players[index].position = 88
+            break
+          case 87:
+            this.players[index].position = 94
+            break
+          case 95:
+            this.players[index].position = 75
+            break
+          case 99:
+            this.players[index].position = 80
+            break
+          case 100:
+            this.winner()
+            break
         }
-        
-
       })
-
     }
   }
-};
+}
 </script>
 
 <style scoped lang="css">
