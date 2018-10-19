@@ -1,18 +1,35 @@
 <template>
   <section class="game-board">
+    <div class="leftBar">
 
-    
+          <div class="profilecard"> 
+            <table class="ui celled table" style="background-color:rgba(255, 255, 255, 0.2);">
+              <tr>
+                <th>ava</th>
+                <th>Player </th>
+                <th>Position </th>
+              </tr>
+              <tr v-for="player in players" :key="player.name">
+                <td> <img :src="player.avatar" alt=""> </td>
+                <td> {{player.name}} </td>
+                <td> {{player.position}} </td>
+              </tr>
+            </table>
+          </div>
+    </div>
     <div id="boardcontainer">
       <div v-if="show" v-for="tile in tiles" :key="tile">
         <tile :tile="tile" :players="players" :diceresult="diceResult"></tile>
       </div>
     </div>
-    
     <div class="sidenav">
-
-
-      <button @click="rollDice" v-if="isMyturn">rolllll</button>
-
+      <button id="rolldicebtn" @click="rollDice" v-if="isMyturn">Roll Dice!</button>
+      <button type="button" v-if="isWinner" @click="backToLobby">Back to Lobby</button>
+    <div>
+    <br>
+    <center> <h1 style="font-size:70px;"> {{ diceResult}}</h1></center>
+        
+    </div>
     </div>
 
   </section>
@@ -33,6 +50,7 @@ export default {
   },
   data() {
     return {
+      isWinner : false,
       diceResult: '',
       myPlayerNumber: '',
       totalPlayer: [],
@@ -145,29 +163,50 @@ export default {
   },
   computed: {
     isMyturn() {
-      if (this.myPlayerNumber === 'p1') {
-        if (this.turnIndex === 0) {
-          return true
-        } else {
+      if(this.isWinner){
+        if (this.myPlayerNumber === 'p1') {
+          if (this.turnIndex === 0) {
           return false
+          }
+        }if (this.myPlayerNumber === 'p2') {
+          if (this.turnIndex === 1) {
+            return false
+          }
+        }if (this.myPlayerNumber === 'p3') {
+          if (this.turnIndex === 2) {
+            return false
+          }
+        }if (this.myPlayerNumber === 'p4') {
+          if (this.turnIndex === 3) {
+            return false
+          }
         }
-      } else if (this.myPlayerNumber === 'p2') {
-        if (this.turnIndex === 1) {
-          return true
-        } else {
-          return false
-        }
-      } else if (this.myPlayerNumber === 'p3') {
-        if (this.turnIndex === 2) {
-          return true
-        } else {
-          return false
-        }
-      } else if (this.myPlayerNumber === 'p4') {
-        if (this.turnIndex === 3) {
-          return true
-        } else {
-          return false
+      }
+      else {
+        if (this.myPlayerNumber === 'p1') {
+          if (this.turnIndex === 0) {
+            return true
+          } else {
+            return false
+          }
+        } else if (this.myPlayerNumber === 'p2') {
+          if (this.turnIndex === 1) {
+            return true
+          } else {
+            return false
+          }
+        } else if (this.myPlayerNumber === 'p3') {
+          if (this.turnIndex === 2) {
+            return true
+          } else {
+            return false
+          }
+        } else if (this.myPlayerNumber === 'p4') {
+          if (this.turnIndex === 3) {
+            return true
+          } else {
+            return false
+          }
         }
       }
     }
@@ -182,12 +221,19 @@ export default {
       if (this.turnIndex === this.totalPlayer.length) {
         db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(0)
       }
-    }
+    },
   },
   components: {
     tile
   },
   methods: {
+    winner() {
+     this.isWinner = true
+   },
+   backToLobby(){
+     console.log('balik ke lobby')
+     this.$router.push('lobby')
+   },
     initGame() {
       let token = localStorage.getItem('token')
       let roomId = localStorage.getItem('roomId')
@@ -223,9 +269,6 @@ export default {
         this.turnIndex = snapshot.val()
       })
     },
-    winner() {
-      console.log('yeeee menang')
-    },
     updateComponent() {
       this.show = false
 
@@ -249,7 +292,7 @@ export default {
           db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(newTurnIndex)
           this.gotAdvance()
           this.updateComponent()
-          console.log(dice)
+          this.diceResult = dice
         })
         .catch(err => {
           console.log(err)
@@ -271,6 +314,9 @@ export default {
           case 8:
             this.players[index].position = 31
             break
+          case 15:
+           this.players[index].position = 26
+           break
           case 16:
             this.players[index].position = 6
             break
@@ -337,10 +383,13 @@ export default {
   box-sizing: border-box;
   display: grid;
   justify-items: center;
-  grid-template-columns: 4fr 2fr;
-
+  grid-template-columns:2fr 4fr 2fr;
+background-image: url('/walpapersnake1.png');
+padding: 30px;
+  
 }
 #boardcontainer {
+  box-shadow: 0 0 30px rgb(241, 217, 0);
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
@@ -356,5 +405,34 @@ export default {
   height: 70px;
   width: 70px;
   background-color: rgb(219, 219, 219);
+}
+#rolldicebtn{
+  background-color: darkorange;
+  margin-top: 50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 100px;
+  filter: drop-shadow(0 0 10px grey);
+  font-size: 25px;
+  transition: .2s;
+}
+#rolldicebtn:hover {
+  margin-top: 30px;
+   width: 180px;
+  height: 180px;
+  cursor: pointer;
+}
+.profilecard{
+  display: grid;
+}
+
+td img {
+  width: 100px;
+  height: 100px;
+  margin: -10px -10px -10px -10px; 
+}
+tr {
+  font-family: Helvetica;
+  font-size: 18px;
 }
 </style>
