@@ -145,7 +145,9 @@ export default {
       roomHost: null,
       roomChat: null,
 
-      messageChat: ''
+      messageChat: '',
+
+      roomStatus: 'waiting'
     }
   },
   computed: {
@@ -177,12 +179,17 @@ export default {
     this.roomInit()
   },
   watch: {
-    roomChat(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
-        audioChat.play()
+    roomStatus() {
+      if (this.roomStatus === 'onGame') {
+        this.$router.push('gameboard')
       }
     },
+    // roomChat(newVal, oldVal) {
+    //   if (newVal !== oldVal) {
+    //     let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
+    //     audioChat.play()
+    //   }
+    // },
     p1() {
       if (!this.p1) {
         this.closeRoom()
@@ -190,7 +197,9 @@ export default {
     }
   },
   methods: {
-    startGame() {},
+    startGame() {
+      db.ref(`/db/rooms/` + this.roomId + `/status`).set(`onGame`)
+    },
     closeRoom() {
       localStorage.removeItem('roomId')
       this.$router.push('lobby')
@@ -277,6 +286,10 @@ export default {
         } else {
           this.roomChat = snapshot.val()
         }
+      })
+
+      db.ref(`/db/rooms/` + roomId + `/status`).on('value', snapshot => {
+        this.roomStatus = snapshot.val()
       })
     }
   }
