@@ -21,5 +21,9 @@ export default new Router({
     path: '/room',
     name: 'room',
     component: Room
+  },{
+    path: '/gameboard',
+    name: 'gameboard',
+    component: () => import('./views/GameBoard.vue')
   }]
 })
