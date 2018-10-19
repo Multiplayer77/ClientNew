@@ -24,7 +24,7 @@
                   {{ Object.values(room.player).length }} person
                 </span>
               </div>
-              <div class="ui mini green bottom attached button" @click="joinRoom(room.id)">
+              <div class="ui mini green bottom attached button" @click="joinRoom(room.id)" :class="{disabled: room.status === 'onGame'}">
                 <i class="add icon"></i>
                 Join Room
               </div>
@@ -79,10 +79,10 @@ export default {
     }
   },
   watch: {
-    // listChat() {
-    //   let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
-    //   audioChat.play()
-    // },
+    listChat() {
+      let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
+      audioChat.play()
+    },
     removeList() {
       for (let i = 0; i < this.removeList.length; i++) {
         db.ref(`/db/globalChat/` + this.removeList[i]).remove()

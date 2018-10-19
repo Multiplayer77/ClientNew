@@ -50,7 +50,7 @@ export default {
   },
   data() {
     return {
-      isWinner : false,
+      isWinner: false,
       diceResult: '',
       myPlayerNumber: '',
       totalPlayer: [],
@@ -163,26 +163,28 @@ export default {
   },
   computed: {
     isMyturn() {
-      if(this.isWinner){
+      if (this.isWinner) {
         if (this.myPlayerNumber === 'p1') {
           if (this.turnIndex === 0) {
-          return false
+            return false
           }
-        }if (this.myPlayerNumber === 'p2') {
+        }
+        if (this.myPlayerNumber === 'p2') {
           if (this.turnIndex === 1) {
             return false
           }
-        }if (this.myPlayerNumber === 'p3') {
+        }
+        if (this.myPlayerNumber === 'p3') {
           if (this.turnIndex === 2) {
             return false
           }
-        }if (this.myPlayerNumber === 'p4') {
+        }
+        if (this.myPlayerNumber === 'p4') {
           if (this.turnIndex === 3) {
             return false
           }
         }
-      }
-      else {
+      } else {
         if (this.myPlayerNumber === 'p1') {
           if (this.turnIndex === 0) {
             return true
@@ -221,19 +223,20 @@ export default {
       if (this.turnIndex === this.totalPlayer.length) {
         db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(0)
       }
-    },
+    }
   },
   components: {
     tile
   },
   methods: {
     winner() {
-     this.isWinner = true
-   },
-   backToLobby(){
-     console.log('balik ke lobby')
-     this.$router.push('lobby')
-   },
+      this.isWinner = true
+    },
+    backToLobby() {
+      let roomId = localStorage.getItem('roomId')
+      db.ref(`/db/rooms/` + roomId).remove()
+      this.$router.push('lobby')
+    },
     initGame() {
       let token = localStorage.getItem('token')
       let roomId = localStorage.getItem('roomId')
@@ -279,24 +282,16 @@ export default {
     },
     rollDice() {
       let roomId = localStorage.getItem('roomId')
-      axios({
-        method: 'GET',
-        url: 'http://roll.diceapi.com/json/d6'
-      })
-        .then(result => {
-          let dice = result.data.dice[0].value
-          db.ref(
-            `/db/rooms/` + roomId + `/player/` + this.totalPlayer[this.turnIndex] + '/position'
-          ).set(this.players[this.turnIndex].position + dice)
-          let newTurnIndex = this.turnIndex + 1
-          db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(newTurnIndex)
-          this.gotAdvance()
-          this.updateComponent()
-          this.diceResult = dice
-        })
-        .catch(err => {
-          console.log(err)
-        })
+
+      let dice = Math.round(Math.random() * 5 + 1)
+      db.ref(
+        `/db/rooms/` + roomId + `/player/` + this.totalPlayer[this.turnIndex] + '/position'
+      ).set(this.players[this.turnIndex].position + dice)
+      let newTurnIndex = this.turnIndex + 1
+      db.ref(`/db/rooms/` + roomId + `/currentTurn`).set(newTurnIndex)
+      this.gotAdvance()
+      this.updateComponent()
+      this.diceResult = dice
     },
 
     gotAdvance() {
@@ -315,8 +310,8 @@ export default {
             this.players[index].position = 31
             break
           case 15:
-           this.players[index].position = 26
-           break
+            this.players[index].position = 26
+            break
           case 16:
             this.players[index].position = 6
             break
