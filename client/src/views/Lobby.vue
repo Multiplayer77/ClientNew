@@ -4,7 +4,7 @@
       <p style="text-align: center; font-size:40px; font-weight:bold; margin-bottom: 0px; margin-top:10px;">Lobby</p>
     </div>
       <div class="ui ten wide column">
-        <div class="ui" style="margin-top:0px;">
+        <div class="ui segment" style="margin-top:0px;">
           <div class="ui dividing header">
             <h3><i class="ui users icon"></i>List Room</h3>
           </div>
@@ -24,7 +24,7 @@
                   {{ Object.values(room.player).length }} person
                 </span>
               </div>
-              <div class="ui mini green bottom attached button" @click="joinRoom(room.id)">
+              <div class="ui mini green bottom attached button" @click="joinRoom(room.id)" :class="{disabled: room.status === 'onGame'}">
                 <i class="add icon"></i>
                 Join Room
               </div>
@@ -121,7 +121,7 @@ export default {
     joinRoom(roomId) {
       let availablePlace = ''
       db.ref('/db/rooms/' + roomId).once('value', snapshot => {
-        if (!snapshot.val().player.p2) {
+        if (!this.p2) {
           db.ref(`/db/rooms/` + roomId + `/player/p2`).set({
             id: localStorage.getItem('token'),
             name: localStorage.getItem('name'),
@@ -132,7 +132,7 @@ export default {
           })
           localStorage.setItem('roomId', roomId)
           this.$router.push('room')
-        } else if (!snapshot.val().player.p3) {
+        } else if (this.p3) {
           db.ref(`/db/rooms/` + roomId + `/player/p3`).set({
             id: localStorage.getItem('token'),
             name: localStorage.getItem('name'),
@@ -143,7 +143,7 @@ export default {
           })
           localStorage.setItem('roomId', roomId)
           this.$router.push('room')
-        } else if (!snapshot.val().player.p4) {
+        } else if (this.p4) {
           db.ref(`/db/rooms/` + roomId + `/player/p4`).set({
             id: localStorage.getItem('token'),
             name: localStorage.getItem('name'),

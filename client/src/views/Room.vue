@@ -147,7 +147,8 @@ export default {
 
       messageChat: '',
 
-      roomStatus: 'waiting'
+      roomStatus: 'waiting',
+      isAlreadyJoin: false
     }
   },
   computed: {
@@ -177,6 +178,7 @@ export default {
   },
   created() {
     this.roomInit()
+    this.isJoinded()
   },
   watch: {
     roomStatus() {
@@ -197,6 +199,69 @@ export default {
     }
   },
   methods: {
+    isJoinded() {
+      let token = localStorage.getItem('token')
+      let roomId = localStorage.getItem('roomId')
+      if (token === this.p1.id) {
+        this.isAlreadyJoin = true
+      }
+      if (this.p2) {
+        if (token === this.p2.id) {
+          this.isAlreadyJoin = true
+        }
+      }
+      if (this.p3) {
+        if (token === this.p3.id) {
+          this.isAlreadyJoin = true
+        }
+      }
+      if (this.p4) {
+        if (token === this.p4.id) {
+          this.isAlreadyJoin = true
+        }
+      }
+      if (!this.isAlreadyJoin) {
+        this.joinRoomForce(roomId)
+      }
+    },
+    joinRoomForce(roomId) {
+      if (!this.isAlreadyJoin) {
+        let roomId = localStorage.getItem('roomId')
+        db.ref('/db/rooms/' + roomId).on('value', snapshot => {
+          if (!this.p2) {
+            db.ref(`/db/rooms/` + roomId + `/player/p2`).set({
+              id: localStorage.getItem('token'),
+              name: localStorage.getItem('name'),
+              avatar: `https://rickandmortyapi.com/api/character/avatar/${Math.floor(
+                Math.random() * 500
+              )}.jpeg`,
+              ready: false
+            })
+            localStorage.setItem('roomId', roomId)
+          } else if (!this.p3) {
+            db.ref(`/db/rooms/` + roomId + `/player/p3`).set({
+              id: localStorage.getItem('token'),
+              name: localStorage.getItem('name'),
+              avatar: `https://rickandmortyapi.com/api/character/avatar/${Math.floor(
+                Math.random() * 500
+              )}.jpeg`,
+              ready: false
+            })
+            localStorage.setItem('roomId', roomId)
+          } else if (!this.p4) {
+            db.ref(`/db/rooms/` + roomId + `/player/p4`).set({
+              id: localStorage.getItem('token'),
+              name: localStorage.getItem('name'),
+              avatar: `https://rickandmortyapi.com/api/character/avatar/${Math.floor(
+                Math.random() * 500
+              )}.jpeg`,
+              ready: false
+            })
+            localStorage.setItem('roomId', roomId)
+          }
+        })
+      }
+    },
     startGame() {
       db.ref(`/db/rooms/` + this.roomId + `/status`).set(`onGame`)
     },
