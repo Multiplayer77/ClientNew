@@ -184,12 +184,12 @@ export default {
         this.$router.push('gameboard')
       }
     },
-    // roomChat(newVal, oldVal) {
-    //   if (newVal !== oldVal) {
-    //     let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
-    //     audioChat.play()
-    //   }
-    // },
+    roomChat(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        let audioChat = new Audio(require('../assets/wav/Blop-Mark_DiAngelo-79054334.wav'))
+        audioChat.play()
+      }
+    },
     p1() {
       if (!this.p1) {
         this.closeRoom()
